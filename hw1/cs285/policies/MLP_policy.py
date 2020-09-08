@@ -81,7 +81,9 @@ class MLPPolicy(BasePolicy, nn.Module, metaclass=abc.ABCMeta):
             observation = obs[None]
 
         # TODO return the action that the policy prescribes
-        raise NotImplementedError
+        policy = self.forward(obs)
+        return policy.rsample()
+        #raise NotImplementedError
 
     # update/train this policy
     def update(self, observations, actions, **kwargs):
@@ -93,7 +95,10 @@ class MLPPolicy(BasePolicy, nn.Module, metaclass=abc.ABCMeta):
     # return more flexible objects, such as a
     # `torch.distributions.Distribution` object. It's up to you!
     def forward(self, observation: torch.FloatTensor) -> Any:
-        raise NotImplementedError
+        mu_hat = self.mean_net(observation)
+        sigma_hat = torch.exp(self.logstd)
+        return torch.distributions.normal.Normal(mu_hat, sigma_hat)
+        #raise NotImplementedError
 
 
 #####################################################
@@ -109,7 +114,16 @@ class MLPPolicySL(MLPPolicy):
             adv_n=None, acs_labels_na=None, qvals=None
     ):
         # TODO: update the policy and return the loss
-        loss = TODO
+        #loss = TODO
+        loss = 0.0
+        for obs, gt_act in zip(observations, actions):
+            self.optimizer.no_grad()
+            pred_act = self.get_action(obs)
+            curr_loss = self.loss(pred_act, gt_act)
+            curr_loss.backward()
+            self.optimizer.step()
+            loss += curr_loss.item()
+            
         return {
             # You can add extra logging information here, but keep this line
             'Training Loss': ptu.to_numpy(loss),
