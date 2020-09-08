@@ -98,7 +98,11 @@ class MLPPolicy(BasePolicy, nn.Module, metaclass=abc.ABCMeta):
         mu_hat = self.mean_net(observation)
         sigma_hat = torch.exp(self.logstd)
         return torch.distributions.normal.Normal(mu_hat, sigma_hat)
-        #raise NotImplementedError
+        #if len(mu_hat.shape) == 2:
+        #    cov = torch.stack([torch.eye(mu_hat.shape[1])*sigma_hat for _ in range(mu_hat.shape[0])])
+        #else:
+        #    cov = torch.eye(mu_hat.shape[0])*sigma_hat
+        #return torch.distributions.multivariate_normal.MultivariateNormal(mu_hat, cov)
 
 
 #####################################################
@@ -114,10 +118,9 @@ class MLPPolicySL(MLPPolicy):
             adv_n=None, acs_labels_na=None, qvals=None
     ):
         # TODO: update the policy and return the loss
-        #loss = TODO
-        self.optimizer.zero_grad()
         obs = ptu.from_numpy(observations)
         pred_acs = self.forward(obs).rsample()
+        self.optimizer.zero_grad()
         gt_acs = ptu.from_numpy(actions)
         loss = self.loss(pred_acs, gt_acs)
         loss.backward()
