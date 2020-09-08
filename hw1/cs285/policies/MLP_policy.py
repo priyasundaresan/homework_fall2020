@@ -98,11 +98,6 @@ class MLPPolicy(BasePolicy, nn.Module, metaclass=abc.ABCMeta):
         mu_hat = self.mean_net(observation)
         sigma_hat = torch.exp(self.logstd)
         return torch.distributions.normal.Normal(mu_hat, sigma_hat)
-        #if len(mu_hat.shape) == 2:
-        #    cov = torch.stack([torch.eye(mu_hat.shape[1])*sigma_hat for _ in range(mu_hat.shape[0])])
-        #else:
-        #    cov = torch.eye(mu_hat.shape[0])*sigma_hat
-        #return torch.distributions.multivariate_normal.MultivariateNormal(mu_hat, cov)
 
 
 #####################################################
