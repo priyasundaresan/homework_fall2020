@@ -1,6 +1,7 @@
 from collections import OrderedDict
 import numpy as np
 import time
+import pickle
 
 import gym
 import torch
@@ -170,8 +171,11 @@ class RL_Trainer(object):
 
         # @Priya 
         if itr == 0:
-            return load_initial_expertdata, 0, None
+            with open(load_initial_expertdata, 'rb') as f:
+                loaded_paths = pickle.load(f)
+                return loaded_paths, 0, None
         paths, envsteps_this_batch = utils.sample_trajectories(self.env, collect_policy, batch_size, self.params['ep_len'])
+        print("Paths", paths)
 
         # collect more rollouts with the same policy, to be saved as videos in tensorboard
         # note: here, we collect MAX_NVIDEO rollouts, each of length MAX_VIDEO_LEN
@@ -199,7 +203,7 @@ class RL_Trainer(object):
             # HINT: use the agent's train function
             # HINT: keep the agent's training log for debugging
             #train_log = TODO
-            train_log = self.agent.train()
+            train_log = self.agent.train(ob_batch, ac_batch, re_batch, next_ob_batch, terminal_batch)
             all_logs.append(train_log)
         return all_logs
 

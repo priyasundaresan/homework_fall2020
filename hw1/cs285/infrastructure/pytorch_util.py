@@ -49,7 +49,7 @@ def build_mlp(
     # Note: nn.Sequential is an instance of nn.Module.
     layers = []
     inp_dim = input_size
-    for i n range(len(n_layers)):
+    for i in range(n_layers):
         layers += [nn.Linear(inp_dim, size), activation]
         inp_dim = size
     layers += [nn.Linear(inp_dim, output_size), output_activation]

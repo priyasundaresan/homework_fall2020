@@ -82,7 +82,7 @@ class MLPPolicy(BasePolicy, nn.Module, metaclass=abc.ABCMeta):
 
         # TODO return the action that the policy prescribes
         policy = self.forward(ptu.from_numpy(obs))
-        return policy.rsample()
+        return ptu.to_numpy(policy.rsample())
         #raise NotImplementedError
 
     # update/train this policy
