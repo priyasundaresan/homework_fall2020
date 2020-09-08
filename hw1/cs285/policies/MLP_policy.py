@@ -81,7 +81,7 @@ class MLPPolicy(BasePolicy, nn.Module, metaclass=abc.ABCMeta):
             observation = obs[None]
 
         # TODO return the action that the policy prescribes
-        policy = self.forward(obs)
+        policy = self.forward(ptu.from_numpy(obs))
         return policy.rsample()
         #raise NotImplementedError
 
@@ -115,14 +115,13 @@ class MLPPolicySL(MLPPolicy):
     ):
         # TODO: update the policy and return the loss
         #loss = TODO
-        loss = 0.0
-        for obs, gt_act in zip(observations, actions):
-            self.optimizer.no_grad()
-            pred_act = self.get_action(obs)
-            curr_loss = self.loss(pred_act, gt_act)
-            curr_loss.backward()
-            self.optimizer.step()
-            loss += curr_loss.item()
+        self.optimizer.zero_grad()
+        obs = ptu.from_numpy(observations)
+        pred_acs = self.forward(obs).rsample()
+        gt_acs = ptu.from_numpy(actions)
+        loss = self.loss(pred_acs, gt_acs)
+        loss.backward()
+        self.optimizer.step()
             
         return {
             # You can add extra logging information here, but keep this line
