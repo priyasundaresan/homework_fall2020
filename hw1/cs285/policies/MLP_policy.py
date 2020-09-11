@@ -80,7 +80,6 @@ class MLPPolicy(BasePolicy, nn.Module, metaclass=abc.ABCMeta):
         else:
             observation = obs[None]
 
-        # TODO return the action that the policy prescribes
         policy = self.forward(ptu.from_numpy(obs))
         return ptu.to_numpy(policy.sample())
         #raise NotImplementedError
@@ -112,7 +111,6 @@ class MLPPolicySL(MLPPolicy):
             self, observations, actions,
             adv_n=None, acs_labels_na=None, qvals=None
     ):
-        # TODO: update the policy and return the loss
         obs = ptu.from_numpy(observations)
         pred_acs = self.forward(obs).rsample()
         self.optimizer.zero_grad()
