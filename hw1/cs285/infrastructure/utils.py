@@ -30,7 +30,7 @@ def sample_trajectory(env, policy, max_path_length, render=False, render_mode=('
         obs.append(ob)
         #ac = TODO # HINT: query the policy's get_action function
         ac = policy.get_action(ob)
-        ac = ac[0]
+        #ac = ac[0]
         acs.append(ac)
 
         # take that action and record results
@@ -44,7 +44,7 @@ def sample_trajectory(env, policy, max_path_length, render=False, render_mode=('
         # TODO end the rollout if the rollout ended
         # HINT: rollout can end due to done, or due to max_path_length
         #rollout_done = TODO # HINT: this is either 0 or 1
-        rollout_done = int(done or (steps >= max_path_length))
+        rollout_done = done or (steps >= max_path_length)
         terminals.append(rollout_done)
 
         if rollout_done:

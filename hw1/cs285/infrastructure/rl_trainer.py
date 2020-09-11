@@ -174,6 +174,7 @@ class RL_Trainer(object):
             with open(load_initial_expertdata, 'rb') as f:
                 loaded_paths = pickle.load(f)
                 return loaded_paths, 0, None
+
         paths, envsteps_this_batch = utils.sample_trajectories(self.env, collect_policy, batch_size, self.params['ep_len'])
 
         # collect more rollouts with the same policy, to be saved as videos in tensorboard
@@ -242,6 +243,7 @@ class RL_Trainer(object):
         if self.log_metrics:
             # returns, for logging
             train_returns = [path["reward"].sum() for path in paths]
+
             eval_returns = [eval_path["reward"].sum() for eval_path in eval_paths]
 
             # episode lengths, for logging
