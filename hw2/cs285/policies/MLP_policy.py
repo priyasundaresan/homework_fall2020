@@ -112,14 +112,16 @@ class MLPPolicy(BasePolicy, nn.Module, metaclass=abc.ABCMeta):
         if self.discrete:
             logits = self.logits_na(observation)
             action_distribution = distributions.Categorical(logits=logits)
-            return action_distribution
         else:
-            mu_hat = self.mean_net(observation)
-            sigma_hat = torch.exp(self.logstd)
-            action_distribution = torch.distributions.normal.Normal(mu_hat, sigma_hat)
-            return action_distribution
+            batch_mean = self.mean_net(observation)
+            scale_tril = torch.diag(torch.exp(self.logstd))
+            batch_dim = batch_mean.shape[0]
+            batch_scale_tril = scale_tril.repeat(batch_dim, 1, 1)
+            action_distribution = distributions.MultivariateNormal(
+                batch_mean,
+                scale_tril=batch_scale_tril,
+            )
         return action_distribution
-
 
 #####################################################
 #####################################################
@@ -136,8 +138,6 @@ class MLPPolicyPG(MLPPolicy):
         advantages = ptu.from_numpy(advantages)
 
         dist = self.forward(observations)
-        #pred_actions = dist.rsample()
-        pred_actions = dist.sample()
 
         # FIXED: compute the loss that should be optimized when training with policy gradient
         # HINT1: Recall that the expression that we want to MAXIMIZE
@@ -147,7 +147,7 @@ class MLPPolicyPG(MLPPolicy):
             # by the `forward` method
         # HINT3: don't forget that `optimizer.step()` MINIMIZES a loss
 
-        loss = -1 * (dist.log_prob(pred_actions)*advantages).sum()
+        loss = -1 * torch.sum(dist.log_prob(actions)*advantages)
 
         # FIXED: optimize `loss` using `self.optimizer`
         # HINT: remember to `zero_grad` first
@@ -158,11 +158,11 @@ class MLPPolicyPG(MLPPolicy):
         if self.nn_baseline:
             ## FIXED: normalize the q_values to have a mean of zero and a standard deviation of one
             ## HINT: there is a `normalize` function in `infrastructure.utils`
-            q_values = normalize(np.mean(q_values), np.std(q_values))
+            targets = normalize(q_values, np.mean(q_values), np.std(q_values))
             targets = ptu.from_numpy(targets)
 
             ## FIXED: use the `forward` method of `self.baseline` to get baseline predictions
-            baseline_predictions = self.baseline.forward(observations)
+            baseline_predictions = self.baseline.forward(observations).squeeze()
             
             ## avoid any subtle broadcasting bugs that can arise when dealing with arrays of shape
             ## [ N ] versus shape [ N x 1 ]

@@ -92,7 +92,7 @@ class PGAgent(BaseAgent):
             ## have the same mean and standard deviation as the current batch of q_values
             baselines = baselines_unnormalized * np.std(q_values) + np.mean(q_values)
             ## FIXED: compute advantage estimates using q_values and baselines
-            advantages = self.estimate_advantage(baselines, q_values)
+            advantages = q_values - baselines
 
         # Else, just set the advantage to [Q]
         else:
@@ -104,7 +104,7 @@ class PGAgent(BaseAgent):
             ## and a standard deviation of one
             ## HINT: there is a `normalize` function in `infrastructure.utils`
             
-            advantages = normalize(np.mean(advantages), np.std(advantages))
+            advantages = normalize(advantages, np.mean(advantages), np.std(advantages))
 
         return advantages
 
@@ -135,7 +135,6 @@ class PGAgent(BaseAgent):
         gammas = np.array([self.gamma**t for t in range(T)])
         value = np.dot(gammas, rewards)
         list_of_discounted_returns = [value for _ in range(T)]
-        
         # Hint: note that all entries of this output are equivalent
             # because each sum is from 0 to T (and doesnt involve t)
 
@@ -153,9 +152,9 @@ class PGAgent(BaseAgent):
             # because the summation happens over [t, T] instead of [0, T]
         # HINT2: it is possible to write a vectorized solution, but a solution
             # using a for loop is also fine
+
         T = len(rewards)
         gammas = np.array([self.gamma**t for t in range(T)])
         prod = gammas*rewards
-        list_of_discounted_cumsums = np.cumsum(prod)
+        list_of_discounted_cumsums = np.cumsum(prod[::-1])[::-1]
         return list_of_discounted_cumsums
-
