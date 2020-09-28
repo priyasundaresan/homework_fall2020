@@ -91,8 +91,10 @@ class MLPPolicy(BasePolicy, nn.Module, metaclass=abc.ABCMeta):
         else:
             observation = obs[None]
 
-        policy = self.forward(ptu.from_numpy(obs))
-        return ptu.to_numpy(policy.sample())
+        observation = ptu.from_numpy(observation)
+        action_distribution = self(observation)
+        action = action_distribution.sample()  # don't bother with rsample
+        return ptu.to_numpy(action)
         # FIXED: get this from hw1
         #return action
 
@@ -107,9 +109,15 @@ class MLPPolicy(BasePolicy, nn.Module, metaclass=abc.ABCMeta):
     # `torch.distributions.Distribution` object. It's up to you!
     def forward(self, observation: torch.FloatTensor):
         # FIXED: get this from hw1
-        mu_hat = self.mean_net(observation)
-        sigma_hat = torch.exp(self.logstd)
-        action_distribution = torch.distributions.normal.Normal(mu_hat, sigma_hat)
+        if self.discrete:
+            logits = self.logits_na(observation)
+            action_distribution = distributions.Categorical(logits=logits)
+            return action_distribution
+        else:
+            mu_hat = self.mean_net(observation)
+            sigma_hat = torch.exp(self.logstd)
+            action_distribution = torch.distributions.normal.Normal(mu_hat, sigma_hat)
+            return action_distribution
         return action_distribution
 
 
@@ -127,8 +135,9 @@ class MLPPolicyPG(MLPPolicy):
         actions = ptu.from_numpy(actions)
         advantages = ptu.from_numpy(advantages)
 
-        distribution = self.forward(observations)
-        pred_actions = distribution.rsample()
+        dist = self.forward(observations)
+        #pred_actions = dist.rsample()
+        pred_actions = dist.sample()
 
         # FIXED: compute the loss that should be optimized when training with policy gradient
         # HINT1: Recall that the expression that we want to MAXIMIZE
@@ -138,7 +147,7 @@ class MLPPolicyPG(MLPPolicy):
             # by the `forward` method
         # HINT3: don't forget that `optimizer.step()` MINIMIZES a loss
 
-        loss = -1 * (distribution.log_prob(pred_actions)*advantages).sum()
+        loss = -1 * (dist.log_prob(pred_actions)*advantages).sum()
 
         # FIXED: optimize `loss` using `self.optimizer`
         # HINT: remember to `zero_grad` first

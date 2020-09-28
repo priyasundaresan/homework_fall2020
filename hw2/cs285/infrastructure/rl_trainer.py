@@ -149,25 +149,30 @@ class RL_Trainer(object):
     ####################################
     ####################################
 
-    def collect_training_trajectories(self, itr, load_initial_expertdata, collect_policy, batch_size):
-        # TODO: get this from hw1
-        # if your load_initial_expertdata is None, then you need to collect new trajectories at *every* iteration
-        print("\nCollecting data to be used for training...")
-
-        # @Priya 
+    def collect_training_trajectories(self, itr, load_initial_expertdata, collect_policy, batch_size, save_expert_data_to_disk=False):
+        # FIXED: get this from hw1
+        # decide how much training data to collect + which policy to use to collect it
+        num_transitions_to_sample = batch_size
         if itr == 0:
-            with open(load_initial_expertdata, 'rb') as f:
-                loaded_paths = pickle.load(f)
-                return loaded_paths, 0, None
+            if load_initial_expertdata is not None:
+                paths = pickle.load(open(self.params['expert_data'], 'rb'))
+                return paths, 0, None
+            if save_expert_data_to_disk:
+                num_transitions_to_sample = self.params['batch_size_initial']
 
-        paths, envsteps_this_batch = utils.sample_trajectories(self.env, collect_policy, batch_size, self.params['ep_len'])
+        # collect data to be used for training
+        print("\nCollecting data to be used for training...")
+        paths, envsteps_this_batch = utils.sample_trajectories(self.env, collect_policy, num_transitions_to_sample, self.params['ep_len'])
 
         # collect more rollouts with the same policy, to be saved as videos in tensorboard
-        # note: here, we collect MAX_NVIDEO rollouts, each of length MAX_VIDEO_LEN
         train_video_paths = None
-        if self.log_video:
+        if self.logvideo:
             print('\nCollecting train rollouts to be used for saving videos...')
             train_video_paths = utils.sample_n_trajectories(self.env, collect_policy, MAX_NVIDEO, MAX_VIDEO_LEN, True)
+
+        if save_expert_data_to_disk and itr == 0:
+            with open('expert_data_{}.pkl'.format(self.params['env_name']), 'wb') as file:
+                pickle.dump(paths, file)
 
         return paths, envsteps_this_batch, train_video_paths
 
@@ -185,7 +190,7 @@ class RL_Trainer(object):
             train_log = self.agent.train(ob_batch, ac_batch, re_batch, next_ob_batch, terminal_batch)
             all_logs.append(train_log)
         return all_logs
-        # TODO: get this from hw1
+        # FIXED: get this from hw1
 
     ####################################
     ####################################
