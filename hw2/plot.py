@@ -40,11 +40,15 @@ def plot_exp2():
     q2_folders = [os.path.join('data', f) for f in train_logs if 'q2' in f]
     plot_returns(q2_folders, "Eval_AverageReturn", "Time", "Eval Average Return", "Exp2: Inverted Pendulum Hyperparameter Search")
 
+def plot_exp3():
+    q3_folders = [os.path.join('data', f) for f in train_logs if 'q3' in f]
+    plot_returns(q3_folders, "Eval_AverageReturn", "Time", "Eval Average Return", "Exp3: LunarLander")
+
 def plot_exp4():
     q4_folders = [os.path.join('data', f) for f in train_logs if 'q4' in f]
     plot_returns(q4_folders, 'Eval_AverageReturn', "Time", "Eval Average Return", "Exp4: Half Cheetah")
 
 if __name__ == '__main__':
     #plot_exp1()
-    plot_exp2()
-    #plot_exp4()
+    plot_exp3()
+    plot_exp4()
