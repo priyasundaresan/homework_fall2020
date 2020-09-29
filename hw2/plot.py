@@ -45,10 +45,16 @@ def plot_exp3():
     plot_returns(q3_folders, "Eval_AverageReturn", "Time", "Eval Average Return", "Exp3: LunarLander")
 
 def plot_exp4():
-    q4_folders = [os.path.join('data', f) for f in train_logs if 'q4' in f]
+    q4_folders = [os.path.join('data', f) for f in train_logs if 'q4_search' in f]
     plot_returns(q4_folders, 'Eval_AverageReturn', "Time", "Eval Average Return", "Exp4: Half Cheetah")
+
+def plot_exp5():
+    q5_folders = [os.path.join('data', f) for f in train_logs if 'q4_b' in f]
+    plot_returns(q5_folders, 'Eval_AverageReturn', "Time", "Eval Average Return", "Exp5: Half Cheetah Additional Exps")
 
 if __name__ == '__main__':
     #plot_exp1()
-    plot_exp3()
+    #plot_exp2()
+    #plot_exp3()
     plot_exp4()
+    plot_exp5()
