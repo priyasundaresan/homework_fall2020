@@ -74,7 +74,7 @@ class DQNAgent(object):
         # FIXED store the result of taking this action into the replay buffer
         # HINT1: see your replay buffer's `store_effect` function
         # HINT2: one of the arguments you'll need to pass in is self.replay_buffer_idx from above
-        done = self.replay_buffer.store_effect(self.replay_buffer_idx, action, reward, done)
+        self.replay_buffer.store_effect(self.replay_buffer_idx, action, reward, done)
 
         # FIXED if taking this step resulted in done, reset the env (and the latest observation)
         if done:
