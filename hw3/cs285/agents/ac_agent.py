@@ -34,10 +34,9 @@ class ACAgent(BaseAgent):
         # FIXED Implement the following pseudocode:
         # for agent_params['num_critic_updates_per_agent_update'] steps,
         #     update the critic
-        critic_loss = 0
-        actor_loss = 0
+        loss = OrderedDict()
         for _ in range(agent_params['num_critic_updates_per_agent_update']):
-            critic_loss += self.critic.update(ob_no, ac_na, next_ob_no, re_n, terminal_n)['Training Loss'].item()
+            loss['Critic_Loss'] = self.critic.update(ob_no, ac_na, next_ob_no, re_n, terminal_n)['Training Loss'].item()
 
         # advantage = estimate_advantage(...)
         advantage = estimate_advantage(self, ob_no, next_ob_no, re_n, terminal_n)
@@ -45,11 +44,7 @@ class ACAgent(BaseAgent):
         # for agent_params['num_actor_updates_per_agent_update'] steps,
         #     update the actor
         for _ in range(agent_params['num_actor_updates_per_agent_update']): 
-            actor_loss += self.actor.update(ob_no, ac_na, adv_n=advantages)
-
-        loss = OrderedDict()
-        loss['Critic_Loss'] = critic_loss
-        loss['Actor_Loss'] = actor_loss
+            loss['Actor_Loss'] = self.actor.update(ob_no, ac_na, adv_n=advantages)
 
         return loss
 
