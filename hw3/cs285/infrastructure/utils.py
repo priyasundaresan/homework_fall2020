@@ -87,7 +87,7 @@ def sample_trajectory(env, policy, max_path_length, render=False, render_mode=('
             break
         else:
             terminals.append(0)
-    return Path(obs, image_obs, acs, rewards, next_obs, terminals
+    return Path(obs, image_obs, acs, rewards, next_obs, terminals)
 
 def sample_trajectories(env, policy, min_timesteps_per_batch, max_path_length, render=False, render_mode=('rgb_array')):
     """

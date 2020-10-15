@@ -68,7 +68,7 @@ class DQNAgent(object):
         # HINT2: remember the following useful function that you've seen before:
             #obs, reward, done, info = env.step(action)
 
-        obs, reward, done, info = env.step(action)
+        obs, reward, done, info = self.env.step(action)
         self.last_obs = obs
 
         # FIXED store the result of taking this action into the replay buffer
