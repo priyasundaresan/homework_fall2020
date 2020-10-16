@@ -34,10 +34,9 @@ class ACAgent(BaseAgent):
         # FIXED Implement the following pseudocode:
         # for agent_params['num_critic_updates_per_agent_update'] steps,
         #     update the critic
-        critic_loss = 0
-        actor_loss = 0
+        loss = OrderedDict()
         for _ in range(agent_params['num_critic_updates_per_agent_update']):
-            critic_loss = self.critic.update(ob_no, ac_na, next_ob_no, re_n, terminal_n)['Training Loss'].item()
+            loss['Critic_Loss'] = self.critic.update(ob_no, ac_na, next_ob_no, re_n, terminal_n)['Training Loss'].item()
 
         # advantage = estimate_advantage(...)
         advantage = estimate_advantage(self, ob_no, next_ob_no, re_n, terminal_n)
@@ -45,22 +44,28 @@ class ACAgent(BaseAgent):
         # for agent_params['num_actor_updates_per_agent_update'] steps,
         #     update the actor
         for _ in range(agent_params['num_actor_updates_per_agent_update']): 
-            actor_loss += self.actor.update(ob_no, ac_na, adv_n=advantages)
-
-        loss = OrderedDict()
-        loss['Critic_Loss'] = critic_loss
-        loss['Actor_Loss'] = actor_loss
+            loss['Actor_Loss'] = self.actor.update(ob_no, ac_na, adv_n=advantages)
 
         return loss
 
     def estimate_advantage(self, ob_no, next_ob_no, re_n, terminal_n):
-        # TODO Implement the following pseudocode:
+        # FIXED Implement the following pseudocode:
         # 1) query the critic with ob_no, to get V(s)
         # 2) query the critic with next_ob_no, to get V(s')
         # 3) estimate the Q value as Q(s, a) = r(s, a) + gamma*V(s')
         # HINT: Remember to cut off the V(s') term (ie set it to 0) at terminal states (ie terminal_n=1)
         # 4) calculate advantage (adv_n) as A(s, a) = Q(s, a) - V(s)
-        adv_n = TODO
+        ob_no = ptu.from_numpy(ob_no)
+        next_ob_no = ptu.from_numpy(next_ob_no)
+        re_n = ptu.from_numpy(re_n)
+        terminal_n = ptu.from_numpy(terminal_n).bool()
+
+        v_s = self.critic.forward(ob_no)
+        v_s_prime = self.critic.forward(next_ob_no)
+        v_s_prime[terminal_n] = 0
+        q_s_a = re_n + self.gamma*v_s_prime
+        adv_n = q_s_a - v_s
+        adv_n = adv_n.to_numpy()
 
         if self.standardize_advantages:
             adv_n = (adv_n - np.mean(adv_n)) / (np.std(adv_n) + 1e-8)
