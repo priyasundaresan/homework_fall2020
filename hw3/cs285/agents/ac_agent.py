@@ -4,6 +4,7 @@ from cs285.critics.bootstrapped_continuous_critic import \
     BootstrappedContinuousCritic
 from cs285.infrastructure.replay_buffer import ReplayBuffer
 from cs285.infrastructure.utils import *
+from cs285.infrastructure import pytorch_util as ptu
 from cs285.policies.MLP_policy import MLPPolicyAC
 from .base_agent import BaseAgent
 
@@ -35,16 +36,16 @@ class ACAgent(BaseAgent):
         # for agent_params['num_critic_updates_per_agent_update'] steps,
         #     update the critic
         loss = OrderedDict()
-        for _ in range(agent_params['num_critic_updates_per_agent_update']):
-            loss['Critic_Loss'] = self.critic.update(ob_no, ac_na, next_ob_no, re_n, terminal_n)['Training Loss'].item()
+        for _ in range(self.agent_params['num_critic_updates_per_agent_update']):
+            loss['Critic_Loss'] = self.critic.update(ob_no, ac_na, next_ob_no, re_n, terminal_n)
 
         # advantage = estimate_advantage(...)
-        advantage = estimate_advantage(self, ob_no, next_ob_no, re_n, terminal_n)
+        advantage = self.estimate_advantage(ob_no, next_ob_no, re_n, terminal_n)
 
         # for agent_params['num_actor_updates_per_agent_update'] steps,
         #     update the actor
-        for _ in range(agent_params['num_actor_updates_per_agent_update']): 
-            loss['Actor_Loss'] = self.actor.update(ob_no, ac_na, adv_n=advantages)
+        for _ in range(self.agent_params['num_actor_updates_per_agent_update']): 
+            loss['Actor_Loss'] = self.actor.update(ob_no, ac_na, adv_n=advantage)
 
         return loss
 
@@ -65,7 +66,7 @@ class ACAgent(BaseAgent):
         v_s_prime[terminal_n] = 0
         q_s_a = re_n + self.gamma*v_s_prime
         adv_n = q_s_a - v_s
-        adv_n = adv_n.to_numpy()
+        adv_n = ptu.to_numpy(adv_n)
 
         if self.standardize_advantages:
             adv_n = (adv_n - np.mean(adv_n)) / (np.std(adv_n) + 1e-8)
