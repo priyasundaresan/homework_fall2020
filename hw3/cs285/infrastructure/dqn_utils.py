@@ -165,7 +165,7 @@ def lander_optimizer():
             lr=1,
         ),
         #learning_rate_schedule=lambda epoch: 1e-3,  # keep init learning rate
-        learning_rate_schedule=lambda epoch: 1e-4,  # keep init learning rate
+        learning_rate_schedule=lambda epoch: 1e-2,  # keep init learning rate
     )
 
 
