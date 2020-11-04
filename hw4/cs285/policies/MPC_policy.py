@@ -60,6 +60,7 @@ class MPCPolicy(BasePolicy):
             predicted_sum_of_rewards_per_model, axis=0)  # [ens, N] --> N
 
         # pick the action sequence and return the 1st element of that sequence
+        #print(self.N, np.argmax(predicted_rewards))
         best_action_sequence = candidate_action_sequences[np.argmax(predicted_rewards)]  # FIXED (Q2)
         action_to_take = best_action_sequence[0]  # FIXED (Q2)
         return action_to_take[None]  # Unsqueeze the first index
@@ -78,11 +79,13 @@ class MPCPolicy(BasePolicy):
         The array should have shape [N].
         """
         N, H, _ = candidate_action_sequences.shape
-        obs_batched = np.concatenate([N*[obs]])
-        acs_batched = candidate_action_sequences[:,0,:]
-        predicted_obs = model.get_prediction(obs_batched, acs_batched, self.data_statistics)
-        rewards = self.env.get_reward(predicted_obs, acs_batched)
-        sum_of_rewards = np.sum(rewards, axis=1) # FIXED (Q2)
+        sum_of_rewards = np.zeros(N)
+        curr_obs = np.concatenate([N*[obs]])
+        for t in range(self.horizon):
+            curr_ac = candidate_action_sequences[:,t,:]
+            curr_reward = np.array(self.env.get_reward(curr_obs, curr_ac)[0])
+            curr_obs = model.get_prediction(curr_obs, curr_ac, self.data_statistics)
+            sum_of_rewards += curr_reward
         # For each candidate action sequence, predict a sequence of
         # states for each dynamics model in your ensemble.
         # Once you have a sequence of predicted states from each model in
