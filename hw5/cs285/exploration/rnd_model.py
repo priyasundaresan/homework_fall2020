@@ -51,7 +51,7 @@ class RNDModel(nn.Module, BaseExplorationModel):
         # HINT: Remember to detach the output of self.f!
         x1 = self.f(ob_no).detach()
         x2 = self.f_hat(ob_no)
-        error = torch.norm(x1-x2, dim=1)
+        error = torch.norm(x1-x2, dim=1) 
         return error
 
     def forward_np(self, ob_no):
