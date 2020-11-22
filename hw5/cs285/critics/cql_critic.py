@@ -86,7 +86,12 @@ class CQLCritic(BaseCritic):
         # CQL Implementation
         # TODO: Implement CQL as described in the pdf and paper
         # Hint: After calculating cql_loss, augment the loss appropriately
-        cql_loss = None
+        # @Priya: Q(s_i, a) is qa_t_values, Q(s_i,a_i) is q_t_values
+        #         torch.Size([256, 5])      torch.Size([256])
+        
+        q_t_logsumexp = torch.logsumexp(qa_t_values, 1)
+        cql_loss = (q_t_logsumexp - q_t_values).mean()
+        loss += self.cql_alpha * cql_loss
 
         self.optimizer.zero_grad()
         loss.backward()
@@ -95,12 +100,11 @@ class CQLCritic(BaseCritic):
         info = {'Training Loss': ptu.to_numpy(loss)}
 
         # TODO: Uncomment these lines after implementing CQL
-        # info['CQL Loss'] = ptu.to_numpy(cql_loss)
-        # info['Data q-values'] = ptu.to_numpy(q_t_values).mean()
-        # info['OOD q-values'] = ptu.to_numpy(q_t_logsumexp).mean()
+        info['CQL Loss'] = ptu.to_numpy(cql_loss)
+        info['Data q-values'] = ptu.to_numpy(q_t_values).mean()
+        info['OOD q-values'] = ptu.to_numpy(q_t_logsumexp).mean()
 
         return info
-
 
     def update_target_network(self):
         for target_param, param in zip(
