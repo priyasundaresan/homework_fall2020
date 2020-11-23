@@ -10,7 +10,7 @@ class ArgMaxPolicy(object):
     def set_critic(self, critic):
         self.critic = critic
 
-    def get_action(self, obs):
+    def get_action(self, obs, softmax=False):
         # MJ: changed the dimension check to a 3
         if len(obs.shape) > 3:
             observation = obs
@@ -19,10 +19,17 @@ class ArgMaxPolicy(object):
 
         ## TODO return the action that maxinmizes the Q-value 
         # at the current observation as the output
-        q_values = self.critic.qa_values(observation)
-        action = q_values.argmax(-1)
 
-        return action[0]
+        q_values = self.critic.qa_values(observation)
+
+        if not softmax:
+            action = q_values.argmax(-1)
+            return action[0]
+        else:
+            exp_qa = np.exp(q_values)
+            dist = (exp_qa / exp_qa.sum()).squeeze()
+            action = np.random.choice(len(dist), 1, p=dist)[0]
+            return action
 
     ####################################
     ####################################

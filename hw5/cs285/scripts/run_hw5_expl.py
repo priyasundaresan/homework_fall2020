@@ -52,6 +52,9 @@ def main():
     parser.add_argument('--batch_size', type=int, default=256)
 
     parser.add_argument('--use_rnd', action='store_true')
+    parser.add_argument('--count_based_expl', action='store_true')
+    parser.add_argument('--softmax_expl', action='store_true')
+
     parser.add_argument('--num_exploration_steps', type=int, default=10000)
     parser.add_argument('--unsupervised_exploration', action='store_true')
 
